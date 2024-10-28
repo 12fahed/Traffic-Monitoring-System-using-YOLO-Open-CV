@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic Signal Control</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f4f4;
+            min-width: 600px;
+            height: 100vh;
+            margin: 0;
+            padding-top: 20px;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            font-size: 2em;
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .signal-container {
+            display: grid;
+            grid-template-columns: 1fr 100px 1fr;
+            grid-template-rows: 1fr 100px 1fr;
+            gap: 50px;
+            width: 600px;
+            height: 600px;
+            justify-items: center;
+            align-items: center;
+        }
+
+        .signal {
+            width: 80px;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+            background-color: black;
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        .light {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: grey;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Position each signal */
+        .top-signal { 
+            grid-column: 2;
+            grid-row: 1;
+        }
+        .right-signal {
+            grid-column: 3;
+            grid-row: 2;
+        }
+        .bottom-signal {
+            grid-column: 2;
+            grid-row: 3;
+        }
+        .left-signal {
+            grid-column: 1;
+            grid-row: 2;
+        }
+        .center {
+            grid-column: 2;
+            grid-row: 2;
+            font-size: 2em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>Traffic Signal Control</h1>
+
+    <div id="vehicle-counts">
+        <h2>Vehicle Counts</h2>
+        <ul id="count-list">
+            <li>Video 1: <span id="count-1">0</span></li>
+            <li>Video 2: <span id="count-2">0</span></li>
+            <li>Video 3: <span id="count-3">0</span></li>
+            <li>Video 4: <span id="count-4">0</span></li>
+            <li>Video 5: <span id="count-5">0</span></li>
+            <li>Video 6: <span id="count-6">0</span></li>
+            <li>Video 7: <span id="count-7">0</span></li>
+            <li>Video 8: <span id="count-8">0</span></li>
+        </ul>
+    </div>
+
+    <div class="signal-container">
+        <div class="signal top-signal">
+            <div class="light" id="top-light-1"></div>
+            <div class="light" id="top-light-2"></div>
+            <div class="light" id="top-light-3"></div>
+        </div>
+        <div class="signal right-signal">
+            <div class="light" id="right-light-1"></div>
+            <div class="light" id="right-light-2"></div>
+            <div class="light" id="right-light-3"></div>
+        </div>
+        <div class="signal bottom-signal">
+            <div class="light" id="bottom-light-1"></div>
+            <div class="light" id="bottom-light-2"></div>
+            <div class="light" id="bottom-light-3"></div>
+        </div>
+        <div class="signal left-signal">
+            <div class="light" id="left-light-1"></div>
+            <div class="light" id="left-light-2"></div>
+            <div class="light" id="left-light-3"></div>
+        </div>
+        <div class="center">⊕</div>
+    </div>
+
+    <script>
+        function resetAllLights(lights) {
+            lights.forEach(light => {
+                light.style.backgroundColor = 'grey';
+                light.style.boxShadow = 'none';
+            });
+        }
+
+        function setLightColor(light, color) {
+            light.style.backgroundColor = color;
+            const colorMap = {
+                'red': 'rgba(255, 0, 0, 0.5)',
+                'yellow': 'rgba(255, 255, 0, 0.5)',
+                'green': 'rgba(0, 255, 0, 0.5)'
+            };
+            light.style.boxShadow = `0 0 20px 10px ${colorMap[color]}`;
+        }
+
+        async function controlSignals() {
+            const topBottom = {
+                red: [document.getElementById('top-light-1'), document.getElementById('bottom-light-1')],
+                yellow: [document.getElementById('top-light-2'), document.getElementById('bottom-light-2')],
+                green: [document.getElementById('top-light-3'), document.getElementById('bottom-light-3')]
+            };
+
+            const leftRight = {
+                red: [document.getElementById('left-light-1'), document.getElementById('right-light-1')],
+                yellow: [document.getElementById('left-light-2'), document.getElementById('right-light-2')],
+                green: [document.getElementById('left-light-3'), document.getElementById('right-light-3')]
+            };
+
+            const allLights = [...Object.values(topBottom), ...Object.values(leftRight)].flat();
+
+            while (true) {
+                // Fetch vehicle count data
+                const response = await fetch('/getVideoCount');
+                const data = await response.json();
+                const vehicleCounts = [data[1], data[2], data[3], data[4]];
+
+                // Find the maximum value from the first four counts
+                const maxCount = Math.max(...vehicleCounts);
+                let greenPair;
+
+                if (vehicleCounts[0] === maxCount) {
+                    greenPair = 'topBottom'; // Pair 1 (top-bottom)
+                } else if (vehicleCounts[1] === maxCount) {
+                    greenPair = 'leftRight'; // Pair 2 (left-right)
+                } else if (vehicleCounts[2] === maxCount) {
+                    greenPair = 'topBottom'; // Pair 1 (top-bottom)
+                } else {
+                    greenPair = 'leftRight'; // Pair 2 (left-right)
+                }
+
+                // Set traffic lights based on the maximum count
+                resetAllLights(allLights);
+
+                if (greenPair === 'topBottom') {
+                    topBottom.green.forEach(light => setLightColor(light, 'green'));
+                    await new Promise(resolve => setTimeout(resolve, 10000)); // Green for 4 seconds
+                    resetAllLights(allLights);
+                    topBottom.yellow.forEach(light => setLightColor(light, 'yellow'));
+                    await new Promise(resolve => setTimeout(resolve, 5000)); // Yellow for 1 second
+                } else {
+                    leftRight.green.forEach(light => setLightColor(light, 'green'));
+                    await new Promise(resolve => setTimeout(resolve, 10000)); // Green for 4 seconds
+                    resetAllLights(allLights);
+                    leftRight.yellow.forEach(light => setLightColor(light, 'yellow'));
+                    await new Promise(resolve => setTimeout(resolve, 5000)); // Yellow for 1 second
+                }
+
+                // Red for 2 seconds after the green and yellow sequence
+                resetAllLights(allLights);
+                if (greenPair === 'topBottom') {
+                    topBottom.red.forEach(light => setLightColor(light, 'red'));
+                } else {
+                    leftRight.red.forEach(light => setLightColor(light, 'red'));
+                }
+                await new Promise(resolve => setTimeout(resolve, 5000)); // Red for 2 seconds
+            }
+        }
+
+        async function updateVehicleCounts() {
+            while (true) {
+                // Fetch vehicle count data
+                const response = await fetch('/getVideoCount');
+                const data = await response.json();
+
+                // Update the counts in the HTML
+                for (let i = 1; i <= 8; i++) {
+                    document.getElementById(`count-${i}`).textContent = data[i] || 0;  // Update count or set to 0 if undefined
+                }
+
+                // Wait for a specified time before fetching again
+                await new Promise(resolve => setTimeout(resolve, 5000)); // Fetch every 5 seconds
+            }
+        }
+
+        // Start updating vehicle counts
+        updateVehicleCounts();
+
+        // Start the signal control
+        controlSignals();
+    </script>
+</body>
+</html>

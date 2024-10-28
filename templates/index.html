@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic Control System</title>
+    <style>
+        body {
+            margin: 0;
+            /* padding: 20px; */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f4f4;
+            min-width: 1600px;
+            height: 100vh;
+            overflow: auto;
+        }
+        h1 {
+            margin: 5px 0 20px 0;
+            font-size: 2em;
+            color: #333;
+            text-align: center;
+        }
+        .road-title {
+            font-size: 1.4em;
+            text-align: center;
+            margin: 5px 0 15px 0;
+            color: #555;
+            font-weight: bold;
+        }
+        .plus-container {
+            display: grid;
+            grid-template-columns: 1fr 800px 1fr;
+            grid-template-rows: auto 450px auto;
+            grid-template-areas: 
+                ". top ."
+                "left center right"
+                ". bottom .";
+            gap: 30px;
+            width: 1600px;
+            justify-items: center;
+            align-items: center;
+        }
+        /* .plus-container {
+            display: grid;
+            grid-template-columns: 1fr 800px 1fr;
+            grid-template-rows: auto 450px auto;
+            grid-template-areas: 
+                ". top ."
+                "left center right"
+                ". bottom .";
+            gap: 30px;
+            width: 1600px;
+            height: calc(100vh - 100px);
+            justify-items: center;
+            align-items: center;
+        } */
+        .video-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 800px;
+        }
+        .video-box.top { grid-area: top; }
+        .video-box.right { grid-area: right; }
+        .video-box.bottom { grid-area: bottom; }
+        .video-box.left { grid-area: left; }
+        .center { 
+            grid-area: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3em;
+            color: #666;
+        }
+        
+        img {
+            width: 480px; /* Increase the width */
+            height: 270px; /* Increase the height */
+            border: 2px solid black;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+        .video-feed {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            gap: 40px;
+        }
+        .video-feed > div {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .video-feed h3 {
+            margin: 0;
+            font-size: 1.2em;
+            color: #666;
+            text-align: center;
+            padding: 5px 0;
+            font-weight: bold;
+        }
+        
+        /* Loading spinner styles */
+        .loader-container {
+            width: 480px; /* Match the new image width */
+            height: 270px; /* Match the new image height */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f8f8f8;
+            border: 2px solid black;
+            border-radius: 8px;
+        }
+        .spinner {
+            box-sizing: border-box;
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin: -20px 0 0 -20px;
+        }
+        .image-container {
+            position: relative;
+        }
+        .hidden {
+            display: none;
+        }
+        .open-traffic-signals-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1em;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Traffic Controlling Surveillance</h1>
+    <button class="open-traffic-signals-button" onclick="openTrafficSignals()">Open Traffic Signals</button>
+    <div class="plus-container">
+        <!-- Road 1 - Top -->
+        <div class="video-box top">
+            <h3 class="road-title">ROAD 1</h3>
+            <div class="video-feed">
+                
+                <div>
+                    <h3>Out</h3>
+                    <div class="image-container">
+                        <div class="loader-container">
+                            <div class="spinner"></div>
+                        </div>
+                        <img src="{{ url_for('video_feed5') }}" 
+                             onload="this.parentElement.querySelector('.loader-container').style.display='none'; this.style.display='block'"
+                             style="display: none;" />
+                    </div>
+                </div>
+
+                <div>
+                    <h3>In</h3>
+                    <div class="image-container">
+                        <div class="loader-container">
+                            <div class="spinner"></div>
+                        </div>
+                        <img src="{{ url_for('video_feed1') }}" 
+                             onload="this.parentElement.querySelector('.loader-container').style.display='none'; this.style.display='block'"
+                             style="display: none;" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Road 2 - Right -->
+        <div class="video-box right">
+            <h3 class="road-title">ROAD 2</h3>
+            <div class="video-feed">
+                <div>
+                    <h3>In</h3>
+                    <div class="image-container">
+                        <div class="loader-container">
+                            <div class="spinner"></div>
+                        </div>
+                        <img src="{{ url_for('video_feed2') }}" 
+                             onload="this.parentElement.querySelector('.loader-container').style.display='none'; this.style.display='block'"
+                             style="display: none;" />
+                    </div>
+                </div>
+                <div>
+                    <h3>Out</h3>
+                    <div class="image-container">
+                        <div class="loader-container">
+                            <div class="spinner"></div>
+                        </div>
+                        <img src="{{ url_for('video_feed6') }}" 
+                             onload="this.parentElement.querySelector('.loader-container').style.display='none'; this.style.display='block'"
+                             style="display: none;" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Road 3 - Bottom -->
+        <div class="video-box bottom">
+            <h3 class="road-title">ROAD 3</h3>
+            <div class="video-feed">
+                <div>
+                    <h3>In</h3>
+                    <div class="image-container">
+                        <div class="loader-container">
+                            <div class="spinner"></div>
+                        </div>
+                        <img src="{{ url_for('video_feed3') }}" 
+                             onload="this.parentElement.querySelector('.loader-container').style.display='none'; this.style.display='block'"
+                             style="display: none;" />
+                    </div>
+                </div>
+                <div>
+                    <h3>Out</h3>
+                    <div class="image-container">
+                        <div class="loader-container">
+                            <div class="spinner"></div>
+                        </div>
+                        <img src="{{ url_for('video_feed7') }}" 
+                             onload="this.parentElement.querySelector('.loader-container').style.display='none'; this.style.display='block'"
+                             style="display: none;" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Road 4 - Left -->
+        <div class="video-box left">
+            <h3 class="road-title">ROAD 4</h3>
+            <div class="video-feed">
+                <div>
+                    <h3>In</h3>
+                    <div class="image-container">
+                        <div class="loader-container">
+                            <div class="spinner"></div>
+                        </div>
+                        <img src="{{ url_for('video_feed4') }}" 
+                             onload="this.parentElement.querySelector('.loader-container').style.display='none'; this.style.display='block'"
+                             style="display: none;" />
+                    </div>
+                </div>
+                <div>
+                    <h3>Out</h3>
+                    <div class="image-container">
+                        <div class="loader-container">
+                            <div class="spinner"></div>
+                        </div>
+                        <img src="{{ url_for('video_feed8') }}" 
+                             onload="this.parentElement.querySelector('.loader-container').style.display='none'; this.style.display='block'"
+                             style="display: none;" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center area -->
+        <div class="center">
+            ⊕
+        </div>
+    </div>
+    <script>
+        // JavaScript function to open a new tab with the traffic_signals page
+        function openTrafficSignals() {
+            window.open("{{ url_for('traffic_signals') }}", "_blank");
+        }
+    </script>
+</body>
+</html>
